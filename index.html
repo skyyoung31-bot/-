@@ -142,7 +142,8 @@ const nm = () => S.name ? esc(S.name) : '친구';
 /* ---------- ui bits ---------- */
 const CONE = '<svg width="28" height="34" viewBox="0 0 30 36" aria-hidden="true"><path d="M15 3 C26 8 28 22 15 33 C2 22 4 8 15 3 Z" fill="#B97A45" stroke="#2B2522" stroke-width="3"/><path d="M7 15 L15 21 L23 15 M8 23 L15 28 L22 23" fill="none" stroke="#2B2522" stroke-width="2.5" stroke-linecap="round"/></svg>';
 const BIGCONE = '<svg width="120" height="144" viewBox="0 0 30 36" aria-hidden="true" style="animation: spin .5s ease"><path d="M15 3 C26 8 28 22 15 33 C2 22 4 8 15 3 Z" fill="#B97A45" stroke="#2B2522" stroke-width="2"/><path d="M7 15 L15 21 L23 15 M8 23 L15 28 L22 23 M10 9 L15 13 L20 9" fill="none" stroke="#2B2522" stroke-width="1.6" stroke-linecap="round"/></svg>';
-function cones(){ let h=''; for (let i=0;i<4;i++) h += i < doneCount() ? CONE : '<div class="cone-slot"></div>'; return '<div style="display:flex;gap:6px;align-items:center" role="img" aria-label="솔방울 ' + doneCount() + '개 모음">' + h + '</div>'; }
+const CONE_GHOST = '<svg width="28" height="34" viewBox="0 0 30 36" aria-hidden="true"><path d="M15 3 C26 8 28 22 15 33 C2 22 4 8 15 3 Z" fill="#2B2522" fill-opacity=".13" stroke="#2B2522" stroke-opacity=".3" stroke-width="2.5" stroke-dasharray="3 2.5"/><path d="M7 15 L15 21 L23 15 M8 23 L15 28 L22 23" fill="none" stroke="#2B2522" stroke-opacity=".22" stroke-width="2.2" stroke-linecap="round"/></svg>';
+function cones(){ let h=''; for (let i=0;i<4;i++) h += i < doneCount() ? CONE : CONE_GHOST; return '<div style="display:flex;gap:6px;align-items:center" role="img" aria-label="솔방울 ' + doneCount() + '개 모음">' + h + '</div>'; }
 function bg(key, filter){ return '<img class="bg" src="' + IMG[key] + '" alt="" style="filter:' + (filter||'none') + '">'; }
 const PATHS = {
   1:{name:'말빛길', sub:'문해력 · 한글 자료와 낱말 탐구', band:'var(--butter)'},
@@ -713,7 +714,7 @@ function award(n){
     '<p style="margin:0;font-size:18px;font-weight:700">' + (stars === 3 ? '거의 틀리지 않았어요. 완벽해요!' : stars === 2 ? '몇 번 헷갈렸지만 끝까지 해냈어요!' : '어려웠지만 포기하지 않았어요! 다시 걸으면 별을 더 받을 수 있어요.') + '</p>' +
     '<p style="margin:0;font-size:20px;font-weight:700">' + PATHS[n].name + '을 끝까지 걸었어요. 지금까지 솔방울 ' + d + '개!</p>' +
     '<p style="margin:0;font-size:18px;font-weight:700;color:var(--pine)">' + (d === 4 ? '솔방울 네 개를 모두 모았어요! 해가 지기 전에 외솔나무로!' : '외솔나무가 조금 더 밝아졌어요. 해가 지기 전에 서둘러요!') + '</p>' +
-    '<div style="display:flex;gap:10px;align-items:center;padding:8px 14px;background:' + PATHS[n].band + ';border:3px solid var(--ink);border-radius:12px;text-align:left">' + CARDSVG + '<span style="font-weight:700;font-size:15px;line-height:1.4"><b>' + CLUE[n].from + '의 단서 카드</b>도 받았어요!<br>' + CLUE[n].say + '</span></div>' +
+    '<div style="display:flex;gap:10px;align-items:center;padding:8px 14px;background:' + PATHS[n].band + ';border:3px solid var(--ink);border-radius:12px;text-align:left">' + CARDSVG + '<span style="font-weight:700;font-size:15px;line-height:1.4"><b>' + CLUE[n].from + '의 현장 과제</b>도 받았어요!<br>' + CLUE[n].say + '</span></div>' +
     '<button class="btn" data-a="toHub">' + (d === 4 ? '외솔나무로 가기 ▶' : '길 지도로 ▶') + '</button></div>';
   screen.firstChild.appendChild(o);
   hub.lastN = n;
@@ -721,7 +722,7 @@ function award(n){
   actions.toHub = () => d === 4 ? finale() : hub(d - (first ? 1 : 0));
 }
 
-/* ---------- 오프라인 연계: 단서 카드 · 탐험 수첩 · 돌아온 탐험대 ---------- */
+/* ---------- 오프라인 연계: 현장 과제 · 탐험 수첩 · 돌아온 탐험대 ---------- */
 const META = 'https://oesolmeta.kr/#/';
 const metaBtn = (sz) => '<a href="' + META + '" target="_blank" rel="noopener noreferrer" class="btn light" style="min-height:' + (sz || 40) + 'px;padding:0 12px;font-size:14px;text-decoration:none;box-shadow:0 3px 0 var(--ink)">스마트 외솔기념관 열기 ↗</a>';
 const CLUE = {
@@ -749,9 +750,9 @@ function flowers(n, delay){
 }
 function clueCard(n, big){
   const C = CLUE[n], open = S.done[n], got = S.after && S.after[n];
-  if (!open) return '<div style="border:4px dashed var(--dash);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;background:rgba(255,251,242,.7);min-height:' + (big ? 170 : 120) + 'px"><span class="disp" style="font-size:22px;color:var(--muted)">' + PATHS[n].name + '</span><span style="font-weight:700;font-size:15px;color:var(--muted)">이 길을 마치면 단서 카드가 열려요</span></div>';
+  if (!open) return '<div style="border:4px dashed var(--dash);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;background:rgba(255,251,242,.7);min-height:' + (big ? 170 : 120) + 'px"><span class="disp" style="font-size:22px;color:var(--muted)">' + PATHS[n].name + '</span><span style="font-weight:700;font-size:15px;color:var(--muted)">이 길을 마치면 현장 과제가 열려요</span></div>';
   return '<div style="border:4px solid var(--ink);border-radius:16px;overflow:hidden;background:var(--paper);box-shadow:0 5px 0 var(--ink)">' +
-    '<div style="padding:6px 12px;background:' + PATHS[n].band + ';border-bottom:4px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="disp" style="font-size:20px">단서 ' + n + ' · ' + PATHS[n].name + '</span>' + (got ? '<span style="font-weight:900;font-size:13px;color:var(--pine)">우리말 조각 완성</span>' : '<span style="font-weight:900;font-size:13px">' + C.from + '의 단서</span>') + '</div>' +
+    '<div style="padding:6px 12px;background:' + PATHS[n].band + ';border-bottom:4px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="disp" style="font-size:20px">현장 과제 ' + n + ' · ' + PATHS[n].name + '</span>' + (got ? '<span style="font-weight:900;font-size:13px;color:var(--pine)">우리말 조각 완성</span>' : '<span style="font-weight:900;font-size:13px">' + C.from + '의 현장 과제</span>') + '</div>' +
     '<div style="padding:8px 12px;display:flex;flex-direction:column;gap:3px">' +
       '<span style="font-weight:900;font-size:13px;color:var(--pine)">어디서: ' + C.place + '</span>' +
       C.m.map(t => '<span style="font-weight:700;font-size:14px;line-height:1.35">· ' + t + '</span>').join('') +
@@ -763,11 +764,11 @@ function clueBoard(){
   const d = doneCount();
   show(
     '<img class="bg" src="' + IMG.bg_map + '" alt="" style="filter:brightness(.8) saturate(' + (0.25 + d*0.19) + ')">' +
-    '<div class="abs" style="left:24px;top:18px;right:24px;display:flex;align-items:center;justify-content:space-between;z-index:20"><div style="display:flex;gap:12px;align-items:center"><button class="btn light" data-a="hub">← 길 지도</button><span class="disp" style="padding:4px 16px;background:var(--cream);border:4px solid var(--ink);border-radius:14px;font-size:26px">탐험 수첩 · 단서 카드 ' + d + ' / 4</span></div>' + sndBtn() + '</div>' +
+    '<div class="abs" style="left:24px;top:18px;right:24px;display:flex;align-items:center;justify-content:space-between;z-index:20"><div style="display:flex;gap:12px;align-items:center"><button class="btn light" data-a="hub">← 길 지도</button><span class="disp" style="padding:4px 16px;background:var(--cream);border:4px solid var(--ink);border-radius:14px;font-size:26px">탐험 수첩 · 현장 과제 ' + d + ' / 4</span></div>' + sndBtn() + '</div>' +
     '<div class="abs" style="left:24px;right:24px;top:90px;bottom:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto auto auto;gap:10px;align-content:start">' +
       [1,2,3,4].map(n => clueCard(n, true)).join('') +
       '<div class="card" style="grid-column:1 / -1;padding:12px 18px;display:flex;align-items:center;gap:14px;justify-content:space-between">' +
-        '<p style="margin:0;font-weight:700;font-size:16px;line-height:1.45">' + (S.fin ? '현장 활동 뒤 수첩에 적은 내용으로 <b>우리말 조각</b>을 채워요. 기념관에 가기 어렵다면 <b>스마트 외솔기념관</b>(oesolmeta.kr) 온라인 관람도 돼요.' : '네 길을 모두 마치고 외솔나무의 빛을 되찾으면, 단서를 들고 진짜 현장으로 떠날 수 있어요.') + '</p>' +
+        '<p style="margin:0;font-weight:700;font-size:16px;line-height:1.45">' + (S.fin ? '현장 활동 뒤 수첩에 적은 내용으로 <b>우리말 조각</b>을 채워요. 기념관에 가기 어렵다면 <b>스마트 외솔기념관</b>(oesolmeta.kr) 온라인 관람도 돼요.' : '네 길을 모두 마치고 외솔나무의 빛을 되찾으면, 현장 과제를 들고 진짜 현장으로 떠날 수 있어요.') + '</p>' +
         '<div style="display:flex;gap:8px;flex-shrink:0">' + (d > 0 ? '<button class="btn light" data-a="send4" style="font-size:15px;padding:0 12px">선생님께 보내기</button>' : '') + (S.fin ? '<button class="btn small" data-a="after">우리말 조각 ' + afterCount() + ' / 4 ▶</button>' : '') + '</div>' +
       '</div>' +
     '</div>',
@@ -778,8 +779,8 @@ function wsHTML(n, print){
   const fs = print ? 1 : 0.82;
   const line = '<div style="border-bottom:1.5px solid #888;height:' + Math.round(34*fs) + 'px"></div>';
   return '<div style="font-family:Noto Sans KR,Apple SD Gothic Neo,Malgun Gothic,sans-serif;color:#111;' + (print ? 'padding:12mm' : '') + '">' +
-    '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #111;padding-bottom:6px"><b style="font-size:' + Math.round(26*fs) + 'px">외솔네길 탐험 활동지 · 단서 ' + n + ' ' + PATHS[n].name + '</b><span style="font-size:' + Math.round(14*fs) + 'px">' + (S.school ? esc(S.school) + ' ' : '______ 학교 ') + (S.grade ? esc(S.grade) : '__') + '학년 ' + (S.cls ? esc(S.cls) : '__') + '반 ' + (S.num ? esc(String(S.num)) : '__') + '번 이름: ' + (S.name ? esc(S.name) : '________') + '</span></div>' +
-    '<p style="margin:' + Math.round(10*fs) + 'px 0 4px;font-size:' + Math.round(16*fs) + 'px"><b>' + C.from + '의 단서:</b> ' + C.say + '</p>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #111;padding-bottom:6px"><b style="font-size:' + Math.round(26*fs) + 'px">외솔네길 탐험 활동지 · 현장 과제 ' + n + ' ' + PATHS[n].name + '</b><span style="font-size:' + Math.round(14*fs) + 'px">' + (S.school ? esc(S.school) + ' ' : '______ 학교 ') + (S.grade ? esc(S.grade) : '__') + '학년 ' + (S.cls ? esc(S.cls) : '__') + '반 ' + (S.num ? esc(String(S.num)) : '__') + '번 이름: ' + (S.name ? esc(S.name) : '________') + '</span></div>' +
+    '<p style="margin:' + Math.round(10*fs) + 'px 0 4px;font-size:' + Math.round(16*fs) + 'px"><b>' + C.from + '의 현장 과제:</b> ' + C.say + '</p>' +
     '<p style="margin:0 0 4px;font-size:' + Math.round(16*fs) + 'px"><b>어디서:</b> ' + C.place + ' (가기 어려우면 스마트 외솔기념관 oesolmeta.kr)</p>' +
     '<p style="margin:' + Math.round(8*fs) + 'px 0 4px;font-size:' + Math.round(16*fs) + 'px"><b>미션</b></p>' +
     C.m.map(m => '<p style="margin:0 0 4px;font-size:' + Math.round(16*fs) + 'px">☐ ' + m + '</p>').join('') +
@@ -824,7 +825,7 @@ function afterForm(n){
     '<img class="bg" src="' + IMG[BGOF[n]] + '" alt="" style="filter:brightness(.85)">' +
     '<div class="abs" style="left:24px;top:18px;right:24px;display:flex;align-items:center;justify-content:space-between;z-index:20"><div style="display:flex;gap:12px;align-items:center"><button class="btn light" data-a="back">← 돌아온 탐험대</button><span class="chip">' + PATHS[n].name + ' 우리말 조각</span></div>' + sndBtn() + '</div>' +
     card(
-      '<div style="padding:10px 14px;background:' + PATHS[n].band + ';border:4px solid var(--ink);border-radius:14px"><span style="font-weight:900;font-size:14px;color:var(--pine)">' + C.from + '의 단서 · ' + C.place + '</span>' + C.m.map(t => '<p style="margin:2px 0 0;font-weight:700;font-size:15px">· ' + t + '</p>').join('') + '</div>' +
+      '<div style="padding:10px 14px;background:' + PATHS[n].band + ';border:4px solid var(--ink);border-radius:14px"><span style="font-weight:900;font-size:14px;color:var(--pine)">' + C.from + '의 현장 과제 · ' + C.place + '</span>' + C.m.map(t => '<p style="margin:2px 0 0;font-weight:700;font-size:15px">· ' + t + '</p>').join('') + '</div>' +
       (C.alt ? '<div style="display:flex;gap:8px;align-items:center"><span style="font-weight:900;font-size:15px">어떻게 둘러봤나요?</span>' + ['현장에 다녀왔어요','스마트 외솔기념관으로 봤어요'].map((t,i) => '<button class="opt ' + ((S.visit && S.visit[n]) === i ? 'sel' : '') + '" data-a="vm" data-v="' + i + '" style="font-size:15px;min-height:40px;padding:4px 12px">' + t + '</button>').join('') + metaBtn(40) + '</div>' : '') +
       C.q.map((q,i) => '<label for="af' + i + '" style="font-weight:900;font-size:17px">' + (i+1) + '. ' + q[0] + '</label><input id="af' + i + '" class="input" style="height:52px;font-size:19px" maxlength="60" placeholder="' + q[1] + '" value="' + esc(prev[i] || '') + '" autocomplete="off">').join('') +
       '<button class="btn small" data-a="save" style="align-self:flex-end">조각 붙이기 ▶</button>', 660) +
@@ -972,7 +973,7 @@ function teacherHome(){
       grp('홀로섬길', [J('길 이야기','e2'), J('체험 전','w2'), J('외솔 자료','p2'), J('갈림길 판단','p2c'), J('생각 비교','p2v'), J('순서 맞추기','p2o'), J('퀴즈','p2q'), J('다짐','p2p'), J('체험 후','g2'), J('마무리 이야기','f2')]) +
       grp('어울림길', [J('길 이야기','e3'), J('체험 전','w3'), J('사례 조사','p3'), J('관점 비교','p3d'), J('의견 나눔판','p3b'), J('고운 말 쓰기','p3w'), J('체험 후','g3'), J('마무리 이야기','f3')]) +
       grp('발돋움길', [J('길 이야기','e4'), J('체험 전','w4'), J('게시판 다듬기','p4'), J('표어 포스터','p4s'), J('실천 다짐','p4p'), J('체험 후','g4'), J('마무리 이야기','f4')]) +
-      grp('마무리와 현장 연계', [J('첫 번째 엔딩 이야기','fin0'), J('마무리 화면','fin1'), J('결과 보내기 화면','send'), J('단서 카드','clue'), J('돌아온 탐험대','after'), J('꽃 피는 엔딩','bloom'), J('엔딩 화면','bboard')]) +
+      grp('마무리와 현장 연계', [J('첫 번째 엔딩 이야기','fin0'), J('마무리 화면','fin1'), J('결과 보내기 화면','send'), J('현장 과제','clue'), J('돌아온 탐험대','after'), J('꽃 피는 엔딩','bloom'), J('엔딩 화면','bboard')]) +
     '</div>',
     {
       tout: () => confirmBox('학생 모드로 나가면 이 기기의 기록이 처음으로 돌아가요. 나갈까요?', () => { const snd = S.sound; S = fresh(); S.sound = snd; save(); title(); }),
@@ -1026,7 +1027,7 @@ function teacherBoard(){
     const ps = list.filter(r => r.p4 && r.p4.sl && r.p4.sl[0]);
     body = '<div style="flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-content:start;padding:6px">' + (ps.length ? ps.map((r,i) => '<div class="card" style="padding:14px 16px;background:' + COLORS[r.p4.col || 0] + ';position:relative;transform:rotate(' + ((i % 3) - 1) * 1.5 + 'deg);display:flex;flex-direction:column;gap:6px"><span style="font-weight:900;font-size:13px">' + tName(r) + '</span><p class="disp" style="margin:0;font-size:27px;line-height:1.3;padding-right:44px">' + esc(r.p4.sl[0]) + '<br>' + esc(r.p4.sl[1]) + '</p><span style="position:absolute;right:8px;bottom:6px">' + STICK[r.p4.stk || 0].replace(/width="\d+" height="\d+"/, 'width="40" height="40"') + '</span></div>').join('') : '<p style="font-weight:700">아직 만든 표어가 없어요.</p>') + '</div>';
   } else {
-    body = '<div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px">' + list.map(r => '<div style="padding:10px 14px;background:var(--paper);border:3px solid var(--ink);border-radius:14px;display:flex;gap:12px"><span class="disp" style="font-size:20px;min-width:110px">' + tName(r) + '</span><div style="flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">' + [1,2,3,4].map(n => { const a = (r.af || {})[n]; return '<div style="border:2px solid var(--ink);border-radius:10px;overflow:hidden"><div style="padding:2px 8px;background:' + PATHS[n].band + ';font-weight:900;font-size:12px">단서 ' + n + (r.vi && r.vi[n] !== undefined ? ' · ' + (r.vi[n] ? '온라인' : '현장') : '') + '</div><p style="margin:0;padding:4px 8px;font-size:13px;font-weight:700;line-height:1.4">' + (a ? esc(a[0]) + '<br><span style="color:var(--pine)">' + esc(a[1]) + '</span>' : '<span style="color:var(--muted)">아직</span>') + '</p></div>'; }).join('') + '</div></div>').join('') + '</div>';
+    body = '<div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px">' + list.map(r => '<div style="padding:10px 14px;background:var(--paper);border:3px solid var(--ink);border-radius:14px;display:flex;gap:12px"><span class="disp" style="font-size:20px;min-width:110px">' + tName(r) + '</span><div style="flex:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">' + [1,2,3,4].map(n => { const a = (r.af || {})[n]; return '<div style="border:2px solid var(--ink);border-radius:10px;overflow:hidden"><div style="padding:2px 8px;background:' + PATHS[n].band + ';font-weight:900;font-size:12px">현장 과제 ' + n + (r.vi && r.vi[n] !== undefined ? ' · ' + (r.vi[n] ? '온라인' : '현장') : '') + '</div><p style="margin:0;padding:4px 8px;font-size:13px;font-weight:700;line-height:1.4">' + (a ? esc(a[0]) + '<br><span style="color:var(--pine)">' + esc(a[1]) + '</span>' : '<span style="color:var(--muted)">아직</span>') + '</p></div>'; }).join('') + '</div></div>').join('') + '</div>';
   }
   show(
     '<div class="abs" style="inset:0;background:#F3EBDD"></div>' +
@@ -1141,7 +1142,7 @@ const FAQ = [
   { k:['표어'], a:'표어는 짧고 리듬감 있게 만드는 게 좋아. 두 줄의 글자 수를 비슷하게 맞추고, 하고 싶은 말을 한 가지로 담아 봐!' },
   { k:['네 갈래','길','무엇을 배워'], a:'말빛길은 문해력, 홀로섬길은 자주성, 어울림길은 시민성, 발돋움길은 실천성을 기르는 길이야. 어느 길부터 가도 괜찮아!' },
   { k:['흐림','나래','한결','할아버지','진짜','실제'], a:'흐림, 나래, 한결, 책방 할아버지는 이 앱의 이야기 속 인물이야. 하지만 외솔 최현배 선생님은 실제로 우리말을 지킨 분이야!' },
-  { k:['스마트','온라인','인터넷','메타'], a:'외솔기념관에 직접 가기 어렵다면, 인터넷으로 둘러볼 수 있는 스마트 외솔기념관(oesolmeta.kr)을 이용해 봐! 탐험 수첩의 단서 카드에서 바로 열 수 있어.' },
+  { k:['스마트','온라인','인터넷','메타'], a:'외솔기념관에 직접 가기 어렵다면, 인터넷으로 둘러볼 수 있는 스마트 외솔기념관(oesolmeta.kr)을 이용해 봐! 탐험 수첩의 현장 과제에서 바로 열 수 있어.' },
   { k:['기념관','울산'], a:'울산에는 외솔 선생님을 기리는 외솔기념관이 있어. 언젠가 직접 가 보면 오늘 배운 이야기를 더 생생하게 만날 수 있을 거야!' },
   { k:['정답','답 알려','답이 뭐'], a:'정답을 바로 알려 주면 네 힘이 자라지 않아! 대신 힌트를 줄게. 문제를 다시 읽고, 앞에서 본 자료를 떠올려 봐.' }
 ];
@@ -1812,9 +1813,9 @@ function finale(){
     { p:'seoyeon', t:'간판 글자도 다 돌아왔어! 해가 지기 전에 해냈다!' },
     { p:'heurim2', t:'(어디선가 들려오는 목소리) 흐흐… 아직 끝난 게 아니야. 사람들이 잊어버린 진짜 외솔 이야기 속으로 숨어 버리겠어…!', filter:'saturate(.8)' },
     { p:'m_think', t:'외솔나무는 빛을 찾았지만, 아직 꽃은 피지 않았어. 흐림이 남은 기억 속에 숨었기 때문이야.' },
-    { p:'m_hello', t:'길마다 받은 단서 카드 네 장을 들고, 울산에 실제로 있는 외솔기념관과 우리 교실, 우리 동네에서 우리말 조각을 찾아오자! 그러면 외솔나무에 꽃이 필 거야.' },
-    { p:'m_think', t:'외솔기념관에 직접 가기 어렵다고? 걱정 마! 외솔기념관은 인터넷으로 둘러볼 수 있는 ‘스마트 외솔기념관’도 열어 두었대. 단서 카드에서 바로 들어갈 수 있어.' },
-    { p:'m_praise', t:nm() + ', 오늘 정말 고마워. 탐험 수첩에서 단서 카드를 꼭 확인해 줘!' }
+    { p:'m_hello', t:'길마다 받은 현장 과제 네 개를 들고, 울산에 실제로 있는 외솔기념관과 우리 교실, 우리 동네에서 우리말 조각을 찾아오자! 그러면 외솔나무에 꽃이 필 거야.' },
+    { p:'m_think', t:'외솔기념관에 직접 가기 어렵다고? 걱정 마! 외솔기념관은 인터넷으로 둘러볼 수 있는 ‘스마트 외솔기념관’도 열어 두었대. 현장 과제에서 바로 들어갈 수 있어.' },
+    { p:'m_praise', t:nm() + ', 오늘 정말 고마워. 탐험 수첩에서 현장 과제를 꼭 확인해 줘!' }
   ], 'bg_map', finale, { last:'마을 둘러보기 ▶', slow:true }); }
   const rows = [
     [1, S.p1.sent ? '내가 지은 문장: ‘' + esc(S.p1.sent) + '’' : '한글 자료를 읽고 우리말을 탐구했어요'],
@@ -1831,7 +1832,7 @@ function finale(){
       '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">' + rows.map(r => '<div style="border:4px solid var(--ink);border-radius:16px;overflow:hidden;background:var(--paper)"><div style="padding:6px 14px;background:' + PATHS[r[0]].band + ';border-bottom:4px solid var(--ink);display:flex;justify-content:space-between;align-items:center"><span class="disp" style="font-size:22px">' + PATHS[r[0]].name + '</span>' + starRow((S.stars && S.stars[r[0]]) || 1, 22) + '</div><p style="margin:0;padding:10px 14px;font-weight:700;font-size:17px;line-height:1.45">' + r[1] + '</p></div>').join('') + '</div>' +
       '<label for="rev" style="font-weight:900;font-size:17px">오늘 외솔네길을 걸으며 느낀 점 한 줄</label>' +
       '<div style="display:flex;gap:10px"><input id="rev" class="input" maxlength="40" placeholder="예: 우리말이 이렇게 멋진 줄 몰랐어요" value="' + esc(S.review) + '" autocomplete="off"><button class="btn small" data-a="sv">남기기</button></div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto"><span id="svd" style="font-weight:700;font-size:15px;color:var(--pine)">' + (S.review ? '소감이 남아 있어요. 선생님께 이 화면을 보여 주세요.' : '다 쓰면 선생님께 이 화면을 보여 주세요.') + '</span><div style="display:flex;gap:8px"><button class="btn light" data-a="hub2" style="font-size:15px;padding:0 12px">길 지도</button><button class="btn light" data-a="send2" style="font-size:15px;padding:0 12px">선생님께 보내기</button><button class="btn small" data-a="clue2">단서 카드 ▶</button></div></div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto"><span id="svd" style="font-weight:700;font-size:15px;color:var(--pine)">' + (S.review ? '소감이 남아 있어요. 선생님께 이 화면을 보여 주세요.' : '다 쓰면 선생님께 이 화면을 보여 주세요.') + '</span><div style="display:flex;gap:8px"><button class="btn light" data-a="hub2" style="font-size:15px;padding:0 12px">길 지도</button><button class="btn light" data-a="send2" style="font-size:15px;padding:0 12px">선생님께 보내기</button><button class="btn small" data-a="clue2">현장 과제 ▶</button></div></div>' +
     '</div>' +
     '<div class="abs" style="right:20px;bottom:16px;display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:220px"><div class="say" style="font-size:21px"><span class="who">외솔마중이</span>고마워, ' + nm() + '! 네 덕분에 외솔나무가 다시 빛나!</div><img class="jumpl" src="' + IMG.m_praise + '" alt="외솔마중이" style="width:180px;height:auto;display:block"></div>',
     {
